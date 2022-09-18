@@ -20,12 +20,12 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static com.bank.demo.controllers.AccountController.*;
+import static org.assertj.core.internal.bytebuddy.matcher.ElementMatchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest({AccountController.class})
 @Import(RestResponseEntityExceptionHandler.class)
@@ -76,9 +76,19 @@ public class AccountControllerTest {
 
         when(accountService2.getTransactions(accountId)).thenReturn(Arrays.asList(t1,t2));
 
-        mockMvc.perform(get(ACCOUNT_BASE + TRANSACTIONS_PATH, accountId))
+        mockMvc.perform(get(ACCOUNT_BASE + TRANSACTIONS_PATH, accountId)
+                        .param("fromAccountingDate", "2019-04-01")
+                        .param("toAccountingDate", "2019-04-01")
+                )
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(jsonPath("$.*").isArray());
+    }
+
+    @Test
+    void shouldFailGetTransactionsWhenBadRequest() throws Exception {
+        Long accountId = 1L;
+        mockMvc.perform(get(ACCOUNT_BASE + TRANSACTIONS_PATH, accountId))
+                .andExpect(status().is4xxClientError());
     }
 
     @Test

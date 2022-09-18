@@ -7,6 +7,7 @@ import com.bank.demo.dto.TransactionDto;
 import com.bank.demo.services.AccountService;
 import com.bank.demo.services.AccountService2;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,9 +38,10 @@ public class AccountController {
 
     @GetMapping(TRANSACTIONS_PATH)
     public ResponseEntity<List<TransactionDto>> getTransactions(@PathVariable Long accountId,
-                                                                @RequestParam LocalDate fromAccountingDate,
-                                                                @RequestParam LocalDate toAccountingDate
-                                                                ) {
+                                                                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                                                @RequestParam("fromAccountingDate") LocalDate fromAccountingDate,
+                                                                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                                                @RequestParam("toAccountingDate") LocalDate toAccountingDate) {
         return ResponseEntity.ok(accountService2.getTransactions(accountId));
     }
 
