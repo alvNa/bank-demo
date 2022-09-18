@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Objects;
 import static org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 
@@ -35,5 +36,12 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         }
 
         return new ResponseEntity<>(new ApiErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        log.warn("Access if forbidden to the resource", ex);
+
+        return new ResponseEntity<>(new ApiErrorResponse(403, ex.getMessage()), HttpStatus.FORBIDDEN);
     }
 }
