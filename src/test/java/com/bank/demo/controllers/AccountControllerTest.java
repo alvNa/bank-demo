@@ -3,7 +3,6 @@ package com.bank.demo.controllers;
 import com.bank.demo.dto.*;
 import com.bank.demo.http.RestResponseEntityExceptionHandler;
 import com.bank.demo.services.AccountService;
-import com.bank.demo.services.AccountService2;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
 import org.junit.jupiter.api.Test;
@@ -20,12 +19,12 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static com.bank.demo.controllers.AccountController.*;
-import static org.assertj.core.internal.bytebuddy.matcher.ElementMatchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest({AccountController.class})
 @Import(RestResponseEntityExceptionHandler.class)
@@ -33,11 +32,8 @@ public class AccountControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    //@MockBean
-    //private AccountService accountService;
-
     @MockBean
-    private AccountService2 accountService2;
+    private AccountService accountService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -51,7 +47,7 @@ public class AccountControllerTest {
                 .availableBalance(BigDecimal.valueOf(29.64))
                 .build();
 
-        when(accountService2.getBalance(accountId)).thenReturn(Optional.of(balanceDto));
+        when(accountService.getBalance(accountId)).thenReturn(Optional.of(balanceDto));
 
         mockMvc.perform(get(ACCOUNT_BASE + BALANCE_PATH, accountId))
                 .andExpect(status().is2xxSuccessful())
@@ -62,7 +58,7 @@ public class AccountControllerTest {
     void shouldReturnNotFoundBalanceWhenInvalidAccountId() throws Exception {
         Long accountId = -1L;
 
-        when(accountService2.getBalance(accountId)).thenReturn(Optional.empty());
+        when(accountService.getBalance(accountId)).thenReturn(Optional.empty());
 
         mockMvc.perform(get(ACCOUNT_BASE + BALANCE_PATH, accountId))
                 .andExpect(status().is4xxClientError());
@@ -73,12 +69,14 @@ public class AccountControllerTest {
         Long accountId = 1L;
         val t1 = TransactionDto.builder().transactionId(1L).build();
         val t2 = TransactionDto.builder().transactionId(2L).build();
+        val dateFrom = LocalDate.of(2019,04,01);
+        val dateTo = LocalDate.of(2019,04,01);
 
-        when(accountService2.getTransactions(accountId)).thenReturn(Arrays.asList(t1,t2));
+        when(accountService.getTransactions(accountId, dateFrom, dateTo)).thenReturn(Arrays.asList(t1,t2));
 
         mockMvc.perform(get(ACCOUNT_BASE + TRANSACTIONS_PATH, accountId)
-                        .param("fromAccountingDate", "2019-04-01")
-                        .param("toAccountingDate", "2019-04-01")
+                        .param("fromAccountingDate", dateFrom.toString())
+                        .param("toAccountingDate", dateTo.toString())
                 )
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(jsonPath("$.*").isArray());
@@ -86,7 +84,7 @@ public class AccountControllerTest {
 
     @Test
     void shouldFailGetTransactionsWhenBadRequest() throws Exception {
-        Long accountId = 1L;
+        val accountId = 14537780L;
         mockMvc.perform(get(ACCOUNT_BASE + TRANSACTIONS_PATH, accountId))
                 .andExpect(status().is4xxClientError());
     }
@@ -136,7 +134,7 @@ public class AccountControllerTest {
                 .direction("XXX")
                 .build();
 
-        when(accountService2.sendMoneyTransfer(accountId, req)).thenReturn(res);
+        when(accountService.sendMoneyTransfer(accountId, req)).thenReturn(res);
 
         mockMvc.perform(post(ACCOUNT_BASE + MONEY_TRANSFER_PATH, accountId)
                         .content(objectMapper.writeValueAsString(req))

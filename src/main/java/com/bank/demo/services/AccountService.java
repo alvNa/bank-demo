@@ -1,87 +1,73 @@
 package com.bank.demo.services;
 
 import com.bank.demo.dto.*;
-import com.bank.demo.exceptions.NotFoundException;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
-@Service
+@Component
 public class AccountService {
-    public static final String BASE_URL = "https://sandbox.platfr.io/api/gbs/banking/v4.0";
-    public static final String ACCOUNTS_PATH = "/accounts";
-    public static final String BALANCE_PATH = "/accounts/%s/balance";
-    public static final String TRANSACTIONS_PATH = "/accounts/%s/transactions";
+    private String bankSrvUrl;
+
+    private WebClient webClient;
+
+    public static final String BALANCE_PATH = "/accounts/{accountId}/balance";
+    public static final String TRANSACTIONS_PATH = "/accounts/{accountId}/transactions";
     public static final String MONEY_TRANSFER_PATH = "/accounts/{accountId}/payments/money-transfers";
 
     @Autowired
-    private RestTemplate restTemplate;
+    public AccountService(@Value("${app.bankSrvUrl}") String bankSrvUrl) {
+        this.bankSrvUrl = bankSrvUrl;
+        this.webClient = WebClient.builder().baseUrl(bankSrvUrl)
+                .defaultHeader("Api-Key", "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP")
+                .defaultHeader("X-Time-Zone", "Europe/Rome")
+                .defaultHeader("Auth-Schema", "S2S")
+                .build();
+    }
 
     public Optional<BalanceDto> getBalance(Long accountId) {
-        String uri = String.format(BASE_URL + BALANCE_PATH, accountId);
-        try {
-            val balanceDto = get(uri,BalanceDto.class);
-            return Optional.ofNullable(balanceDto);
-        }
-        catch (HttpClientErrorException ex){
-            return Optional.empty();
-        }
+        Mono<BalanceDto> customer = webClient.get()
+                .uri(BALANCE_PATH, accountId)
+                .retrieve()
+                .onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> Mono.empty())
+                .bodyToMono(BalanceDto.class);
+
+        Optional<BalanceDto> balanceDto = customer.blockOptional();
+        return balanceDto;
     }
 
-    public List<TransactionDto> getTransactions(Long accountId) {
-        String uri = String.format(BASE_URL + TRANSACTIONS_PATH, accountId);
-        try {
-            val transactionsDto = get(uri, TransactionsDto.class);
-            return transactionsDto.getList();
-        }
-        catch (HttpClientErrorException ex){
-            log.error(ex.getMessage());
-            return Collections.emptyList();
-        }
+    public List<TransactionDto> getTransactions(Long accountId, LocalDate from, LocalDate to) {
+        Mono<TransactionsDto> transactions = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(TRANSACTIONS_PATH)
+                        .queryParam("fromAccountingDate", from.toString())
+                        .queryParam("toAccountingDate", to.toString())
+                        .build(accountId))
+                .retrieve()
+                .onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> Mono.empty())
+                .bodyToMono(TransactionsDto.class);
+
+        Optional<TransactionsDto> transactionsDto = transactions.blockOptional();
+        return transactionsDto.map(TransactionsDto::getList).orElse(Collections.emptyList());
     }
 
-    public Optional<MoneyTransferResponseDto> commitTransfer(Long accountId, MoneyTransferRequestDto body) {
-        String uri = String.format(BASE_URL + TRANSACTIONS_PATH, accountId);
-        try {
-            val moneyTransferResponseDto = save(uri, body, MoneyTransferResponseDto.class);
-            return Optional.of(moneyTransferResponseDto);
-        }
-        catch (HttpClientErrorException ex){
-            log.error(ex.getMessage());
-            return Optional.empty();
-        }
+    public MoneyTransferResponseDto sendMoneyTransfer(Long accountId, MoneyTransferRequestDto req) {
+        Mono<MoneyTransferResponseDto> quotation = webClient.post()
+                .uri(MONEY_TRANSFER_PATH, accountId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(req), MoneyTransferRequestDto.class)
+                .retrieve()
+                .bodyToMono(MoneyTransferResponseDto.class);
+
+        return quotation.block();
     }
-
-    private <T> T get(String uri, Class<T> clazz) {
-        return exchange(uri, HttpMethod.GET, clazz);
-    }
-
-    private <T> T save(String uri, Object body, Class<T> clazz) {
-        val response = restTemplate.postForEntity(uri, body, clazz);
-        return response.getBody();
-    }
-
-    private <T> T exchange(String uri, HttpMethod httpMethod, Class<T> clazz) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Api-Key", "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP");
-        headers.set("X-Time-Zone", "Europe/Rome");
-        headers.set("Auth-Schema", "S2S");
-        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
-
-        ResponseEntity<T> resp = restTemplate.exchange(uri, httpMethod, entity, clazz);
-        if (resp.getStatusCode().equals(HttpStatus.OK)) {
-            return resp.getBody();
-        }
-        throw new NotFoundException(String.format("Failed to retrieve data (response status %d)", resp.getStatusCodeValue()));
-    }
-
 }
