@@ -1,0 +1,30 @@
+{
+  "list": [
+    {
+      "transactionId": "1331714087",
+      "operationId": "00000000273015",
+      "accountingDate": "2019-04-01",
+      "valueDate": "2019-04-01",
+      "type": {
+        "enumeration": "GBS_TRANSACTION_TYPE",
+        "value": "GBS_TRANSACTION_TYPE_0023"
+      },
+      "amount": -800,
+      "currency": "EUR",
+      "description": "BA JOHN DOE PAYMENT INVOICE 75/2017"
+    },
+    {
+      "transactionId": "1331714088",
+      "operationId": "00000000273015",
+      "accountingDate": "2019-04-01",
+      "valueDate": "2019-04-01",
+      "type": {
+        "enumeration": "GBS_TRANSACTION_TYPE",
+        "value": "GBS_TRANSACTION_TYPE_0015"
+      },
+      "amount": -1,
+      "currency": "EUR",
+      "description": "CO MONEY TRANSFER FEES"
+    }
+  ]
+}
