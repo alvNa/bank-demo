@@ -124,9 +124,9 @@ public class AccountControllerTest {
                 .name("Jhon")
                 .build();
         val req = MoneyTransferRequestDto.builder()
-                .creditor(creditor)
-                .amount(BigDecimal.valueOf(11L))
-                .currency("EUR")
+                //.creditor(creditor)
+                //.amount(BigDecimal.valueOf(11L))
+                //.currency("EUR")
                 .build();
 
         val res = MoneyTransferResponseDto.builder()

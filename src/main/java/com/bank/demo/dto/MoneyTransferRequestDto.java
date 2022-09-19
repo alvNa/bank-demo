@@ -19,11 +19,12 @@ import java.time.LocalDate;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MoneyTransferRequestDto implements Serializable {
-    @NotNull
-    private Creditor creditor;
+    //@NotNull
+    //private Creditor creditor;
     private LocalDate executionDate;
     private String uri;
     private String description;
+    /*
     @NotNull
     @Positive
     private BigDecimal amount;
@@ -34,4 +35,6 @@ public class MoneyTransferRequestDto implements Serializable {
     private boolean isInstant;
     private String feeType;
     private Long feeAccountId;
+    private TaxRelief taxRelief;
+    */
 }

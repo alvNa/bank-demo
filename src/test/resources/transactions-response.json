@@ -1,0 +1,86 @@
+{
+  "status": "OK",
+  "error": [],
+  "payload": {
+    "list": [
+      {
+        "transactionId": "1001049464001",
+        "operationId": "16000131176722",
+        "accountingDate": "2016-12-30",
+        "valueDate": "2016-12-30",
+        "type": {
+          "enumeration": "GBS_TRANSACTION_TYPE",
+          "value": "GBS_ACCOUNT_TRANSACTION_TYPE_0010"
+        },
+        "amount": 448.04,
+        "currency": "EUR",
+        "description": "BD PAGAMENTO SAI         DA 03268.49130        DATA ORDINE 30122016  PAGAMENTO SAI"
+      },
+      {
+        "transactionId": "999684166001",
+        "operationId": "16000129946514",
+        "accountingDate": "2016-12-27",
+        "valueDate": "2016-12-27",
+        "type": {
+          "enumeration": "GBS_TRANSACTION_TYPE",
+          "value": "GBS_ACCOUNT_TRANSACTION_TYPE_0034"
+        },
+        "amount": 700.00,
+        "currency": "EUR",
+        "description": "GC ACCANTONAMENTO TASSE  DA 03268.44870        DATA ORDINE 27122016  ACCANTONAMENTO TASSE"
+      },
+      {
+        "transactionId": "996387987001",
+        "operationId": "16000127126591",
+        "accountingDate": "2016-12-19",
+        "valueDate": "2016-12-19",
+        "type": {
+          "enumeration": "GBS_TRANSACTION_TYPE",
+          "value": "GBS_ACCOUNT_TRANSACTION_TYPE_0010"
+        },
+        "amount": 1.00,
+        "currency": "EUR",
+        "description": "BD TERRIBILE MATTEO TERRIBILE LUCA             DA 03268.49130        DATA ORDINE 19122016  API GATEWAY"
+      },
+      {
+        "transactionId": "996404929001",
+        "operationId": "16000127136129",
+        "accountingDate": "2016-12-19",
+        "valueDate": "2016-12-19",
+        "type": {
+          "enumeration": "GBS_TRANSACTION_TYPE",
+          "value": "GBS_ACCOUNT_TRANSACTION_TYPE_0010"
+        },
+        "amount": 1.00,
+        "currency": "EUR",
+        "description": "BD TERRIBILE MATTEO TERRIBILE LUCA             DA 03268.49130        DATA ORDINE 19122016  API GATEWAY"
+      },
+      {
+        "transactionId": "996502710001",
+        "operationId": "16000127206281",
+        "accountingDate": "2016-12-19",
+        "valueDate": "2016-12-19",
+        "type": {
+          "enumeration": "GBS_TRANSACTION_TYPE",
+          "value": "GBS_ACCOUNT_TRANSACTION_TYPE_0010"
+        },
+        "amount": 1.00,
+        "currency": "EUR",
+        "description": "BD TEST BONIFICO         DA 03268.49130        DATA ORDINE 19122016  TEST BONIFICO"
+      },
+      {
+        "transactionId": "996520513001",
+        "operationId": "16000127227859",
+        "accountingDate": "2016-12-19",
+        "valueDate": "2016-12-19",
+        "type": {
+          "enumeration": "GBS_TRANSACTION_TYPE",
+          "value": "GBS_ACCOUNT_TRANSACTION_TYPE_0010"
+        },
+        "amount": 1.00,
+        "currency": "EUR",
+        "description": "BD TERRIBILE MATTEO TERRIBILE LUCA             DA 03268.49130        DATA ORDINE 19122016  API GATEWAY"
+      }
+    ]
+  }
+}
