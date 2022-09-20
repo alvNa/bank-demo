@@ -8,7 +8,7 @@ import java.io.Serializable;
 @Data
 @Builder
 public class Creditor implements Serializable {
-    private String name;
-    private AccountDto account;
-    private AddressDto address;
+    String name;
+    AccountDto account;
+    AddressDto address;
 }

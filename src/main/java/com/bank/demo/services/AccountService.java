@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -73,11 +74,17 @@ public class AccountService {
                 .orElse(Collections.emptyList());
     }
 
-    public MoneyTransferResponseDto sendMoneyTransfer(Long accountId, MoneyTransferRequestDto req) throws MoneyTransferExcepion {
+    public MoneyTransferResponseDto sendMoneyTransfer(Long accountId, MoneyTransferRequestDto body) throws MoneyTransferExcepion {
         val transferResult = webClient.post()
                 .uri(MONEY_TRANSFER_PATH, accountId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(req), MoneyTransferRequestDto.class)
+                .accept(MediaType.APPLICATION_JSON)
+                //.body(body, MoneyTransferRequestDto.class)
+                //.bodyValue(req)
+                .body(Mono.just(body), MoneyTransferRequestDto.class)
+                //.body(BodyInserters.fromValue(req))
+                //.body(BodyInserters.fromValue(req))
+
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<ResultDto<MoneyTransferResponseDto>>(){});
 

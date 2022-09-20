@@ -1,6 +1,8 @@
 package com.bank.demo.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,22 +21,23 @@ import java.time.LocalDate;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MoneyTransferRequestDto implements Serializable {
-    //@NotNull
-    //private Creditor creditor;
-    private LocalDate executionDate;
-    private String uri;
-    private String description;
-    /*
+    @NotNull
+    private Creditor creditor;
+    @JsonFormat(pattern="yyyy-MM-dd")
+    LocalDate executionDate;
+    String uri;
+    String description;
     @NotNull
     @Positive
-    private BigDecimal amount;
+    BigDecimal amount;
     @NotNull
     @NotBlank
-    private String currency;
-    private boolean isUrgent;
-    private boolean isInstant;
-    private String feeType;
-    private Long feeAccountId;
+    String currency;
+    @JsonProperty("isUrgent")
+    boolean isUrgent;
+    @JsonProperty("isInstant")
+    boolean isInstant;
+    String feeType;
+    String feeAccountId;
     private TaxRelief taxRelief;
-    */
 }

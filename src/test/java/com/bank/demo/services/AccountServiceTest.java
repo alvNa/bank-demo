@@ -3,12 +3,12 @@ package com.bank.demo.services;
 import com.bank.demo.dto.*;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockserver.client.MockServerClient;
+import org.mockserver.model.JsonBody;
 import org.mockserver.model.MediaType;
 import org.mockserver.springtest.MockServerTest;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +17,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDate;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -114,11 +112,12 @@ public class AccountServiceTest {
         val jsonRequest = Files.readString(moneyRequestResourceFile.getFile().toPath());
         val jsonResponse = Files.readString(moneyResponseResourceFile.getFile().toPath());
         val accountId = 14537780L;
+        val body = JsonBody.json(jsonRequest);
         mockServerClient
                 .when(request()
                         .withMethod("POST")
                         .withPath("/accounts/14537780/payments/money-transfers")
-                        .withBody(jsonRequest)
+                        .withBody(body)
                 )
                 .respond(response()
                         .withStatusCode(200)
@@ -131,9 +130,9 @@ public class AccountServiceTest {
                 .bicCode("SELBIT2BXXX")
                 .build();
         val addressDto = AddressDto.builder()
-                .city("Madrid")
-                .countryCode("34")
-                .address("xxx")
+                //.city("Madrid")
+                //.countryCode("34")
+                //.address("xxx")
                 .build();
 
         val creditor = Creditor.builder()
@@ -142,11 +141,34 @@ public class AccountServiceTest {
                 .address(addressDto)
                 .build();
 
+        val nat = NaturalPersonBeneficiary.builder()
+                .fiscalCode1("MRLFNC81L04A859L")
+                .build();
+
+        val legal = LegalPersonBeneficiary.builder()
+                .build();
+
+        val taxRelief = TaxRelief.builder()
+                .taxReliefId("L449")
+                .isCondoUpgrade(false)
+                .creditorFiscalCode("56258745832")
+                .beneficiaryType("NATURAL_PERSON")
+                .naturalPersonBeneficiary(nat)
+                .legalPersonBeneficiary(legal)
+                .build();
+
         val req = MoneyTransferRequestDto.builder()
-                //.creditor(creditor)
+                .creditor(creditor)
                 .executionDate(LocalDate.of(2019,4,1))
                 .uri("REMITTANCE_INFORMATION")
                 .description("Payment invoice 75/2017")
+                .amount(BigDecimal.valueOf(800))
+                .currency("EUR")
+                .isUrgent(false)
+                .isInstant(false)
+                .feeType("SHA")
+                .feeAccountId("45685475")
+                .taxRelief(taxRelief)
                 .build();
 
         val moneyTransferResponseDto = assertDoesNotThrow(() -> accountService.sendMoneyTransfer(accountId, req));
