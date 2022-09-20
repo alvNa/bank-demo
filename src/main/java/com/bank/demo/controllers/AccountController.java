@@ -6,6 +6,7 @@ import com.bank.demo.dto.MoneyTransferResponseDto;
 import com.bank.demo.dto.TransactionDto;
 import com.bank.demo.services.AccountService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +44,7 @@ public class AccountController {
         return ResponseEntity.ok(accountService.getTransactions(accountId, fromDate, toDate));
     }
 
+    @SneakyThrows
     @PostMapping(MONEY_TRANSFER_PATH)
     public ResponseEntity<MoneyTransferResponseDto> commitTransfer(@PathVariable Long accountId, @RequestBody @Valid MoneyTransferRequestDto body) {
         return ResponseEntity.ok(accountService.sendMoneyTransfer(accountId, body));

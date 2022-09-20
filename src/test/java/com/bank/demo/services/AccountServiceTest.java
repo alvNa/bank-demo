@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockserver.client.MockServerClient;
+import org.mockserver.model.JsonBody;
 import org.mockserver.model.MediaType;
 import org.mockserver.springtest.MockServerTest;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,12 +17,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -36,13 +35,16 @@ public class AccountServiceTest {
 
     private MockServerClient mockServerClient;
 
-    @Value("classpath:balance.json")
+    @Value("classpath:balance-response.json")
     private Resource balanceResourceFile;
 
-    @Value("classpath:transactions.json")
+    @Value("classpath:transactions-response.json")
     private Resource transactionsResourceFile;
 
-    @Value("classpath:money-transfer-response.json")
+    @Value("classpath:money-transfer-request1.json")
+    private Resource moneyRequestResourceFile;
+
+    @Value("classpath:money-transfer-response2.json")
     private Resource moneyResponseResourceFile;
 
     private AccountService accountService;
@@ -54,8 +56,7 @@ public class AccountServiceTest {
 
     @Test
     void shouldGetBalanceOK() throws IOException {
-        val bytes = Files.readAllBytes(balanceResourceFile.getFile().toPath());
-        String json = new String(bytes, StandardCharsets.UTF_8);
+        val jsonResponse = Files.readString(balanceResourceFile.getFile().toPath());
 
         mockServerClient.when(request()
                         .withMethod("GET")
@@ -63,13 +64,13 @@ public class AccountServiceTest {
                 .respond(response()
                         .withStatusCode(200)
                         .withContentType(MediaType.APPLICATION_JSON)
-                        .withBody(json));
+                        .withBody(jsonResponse));
 
         Long accountId = 1L;
         val response = BalanceDto.builder()
-                .date(LocalDate.of(2018,8,17))
-                .balance(BigDecimal.valueOf(29.64))
-                .availableBalance(BigDecimal.valueOf(29.64))
+                .date(LocalDate.of(2022,9,20))
+                .balance(BigDecimal.valueOf(7.27))
+                .availableBalance(BigDecimal.valueOf(7.27))
                 .currency("EUR")
                 .build();
 
@@ -82,46 +83,46 @@ public class AccountServiceTest {
 
     @Test
     void shouldGetTransactionsOK() throws IOException {
-        val bytes = Files.readAllBytes(transactionsResourceFile.getFile().toPath());
-        String json = new String(bytes, StandardCharsets.UTF_8);
+        val jsonResponse = Files.readString(transactionsResourceFile.getFile().toPath());
         val accountId = 14537780L;
+        val dateFrom = LocalDate.of(2016,12,01);
+        val dateTo = LocalDate.of(2017,01,01);
 
         mockServerClient.when(request()
                         .withMethod("GET")
-                        .withPath("/accounts/14537780/transactions"))
+                        .withPath("/accounts/14537780/transactions")
+                        .withQueryStringParameter("fromAccountingDate",dateFrom.toString())
+                        .withQueryStringParameter("toAccountingDate",dateTo.toString()))
                 .respond(response()
                         .withStatusCode(200)
                         .withContentType(MediaType.APPLICATION_JSON)
-                        .withBody(json));
+                        .withBody(jsonResponse));
 
-        val transactionId = 1323L;
-        val response = TransactionDto.builder()
-                .transactionId(transactionId)
-                .build();
-        val dateFrom = LocalDate.of(2019,04,01);
-        val dateTo = LocalDate.of(2019,04,01);
+        val transactionId = 1001049464001L;
 
         val transactions = accountService.getTransactions(accountId, dateFrom, dateTo);
 
-        // Assert response
         assertNotNull(transactions);
-        //assertEquals(response, maybeBalance.get());
+        assertEquals(6, transactions.size());
+        assertEquals(transactionId, transactions.get(0).getTransactionId());
     }
 
     @Test
     void shouldSendMoneyTransferOK() throws IOException {
-        val bytes = Files.readAllBytes(moneyResponseResourceFile.getFile().toPath());
-        String json = new String(bytes, StandardCharsets.UTF_8);
+        val jsonRequest = Files.readString(moneyRequestResourceFile.getFile().toPath());
+        val jsonResponse = Files.readString(moneyResponseResourceFile.getFile().toPath());
         val accountId = 14537780L;
+        val body = JsonBody.json(jsonRequest);
         mockServerClient
                 .when(request()
                         .withMethod("POST")
                         .withPath("/accounts/14537780/payments/money-transfers")
+                        .withBody(body)
                 )
                 .respond(response()
                         .withStatusCode(200)
                         .withContentType(MediaType.APPLICATION_JSON)
-                        .withBody(json)
+                        .withBody(jsonResponse)
                 );
 
         val accountDto = AccountDto.builder()
@@ -129,9 +130,9 @@ public class AccountServiceTest {
                 .bicCode("SELBIT2BXXX")
                 .build();
         val addressDto = AddressDto.builder()
-                .city("Madrid")
-                .countryCode("34")
-                .address("xxx")
+                //.city("Madrid")
+                //.countryCode("34")
+                //.address("xxx")
                 .build();
 
         val creditor = Creditor.builder()
@@ -140,14 +141,37 @@ public class AccountServiceTest {
                 .address(addressDto)
                 .build();
 
+        val nat = NaturalPersonBeneficiary.builder()
+                .fiscalCode1("MRLFNC81L04A859L")
+                .build();
+
+        val legal = LegalPersonBeneficiary.builder()
+                .build();
+
+        val taxRelief = TaxRelief.builder()
+                .taxReliefId("L449")
+                .isCondoUpgrade(false)
+                .creditorFiscalCode("56258745832")
+                .beneficiaryType("NATURAL_PERSON")
+                .naturalPersonBeneficiary(nat)
+                .legalPersonBeneficiary(legal)
+                .build();
+
         val req = MoneyTransferRequestDto.builder()
                 .creditor(creditor)
                 .executionDate(LocalDate.of(2019,4,1))
                 .uri("REMITTANCE_INFORMATION")
                 .description("Payment invoice 75/2017")
+                .amount(BigDecimal.valueOf(800))
+                .currency("EUR")
+                .isUrgent(false)
+                .isInstant(false)
+                .feeType("SHA")
+                .feeAccountId("45685475")
+                .taxRelief(taxRelief)
                 .build();
 
-        val moneyTransferResponseDto = accountService.sendMoneyTransfer(accountId, req);
+        val moneyTransferResponseDto = assertDoesNotThrow(() -> accountService.sendMoneyTransfer(accountId, req));
 
         // Assert response
         assertNotNull(moneyTransferResponseDto);

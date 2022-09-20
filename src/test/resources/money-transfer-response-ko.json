@@ -1,0 +1,11 @@
+{
+  "status": "KO",
+  "errors": [
+    {
+      "code": "REQ500",
+      "description": "Problem with Service",
+      "params": ""
+    }
+  ],
+  "payload": {}
+}
