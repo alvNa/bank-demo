@@ -5,8 +5,9 @@ import com.bank.demo.dto.MoneyTransferRequestDto;
 import com.bank.demo.dto.MoneyTransferResponseDto;
 import com.bank.demo.dto.TransactionDto;
 import com.bank.demo.dto.generic.PayloadDto;
+import com.bank.demo.dto.generic.Result2Dto;
 import com.bank.demo.dto.generic.ResultDto;
-import com.bank.demo.exceptions.MoneyTransferExcepion;
+import com.bank.demo.exceptions.AccountBusinessException;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,13 +16,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Objects.nonNull;
@@ -44,6 +46,7 @@ public class AccountService {
                 .defaultHeader("X-Time-Zone", "Europe/Rome")
                 .defaultHeader("Auth-Schema", "S2S")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .filter(errorHandler())
                 .build();
     }
 
@@ -74,28 +77,40 @@ public class AccountService {
                 .orElse(Collections.emptyList());
     }
 
-    public MoneyTransferResponseDto sendMoneyTransfer(Long accountId, MoneyTransferRequestDto body) throws MoneyTransferExcepion {
+    public MoneyTransferResponseDto sendMoneyTransfer(Long accountId, MoneyTransferRequestDto body) throws AccountBusinessException {
         val transferResult = webClient.post()
                 .uri(MONEY_TRANSFER_PATH, accountId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                //.body(body, MoneyTransferRequestDto.class)
-                //.bodyValue(req)
                 .body(Mono.just(body), MoneyTransferRequestDto.class)
-                //.body(BodyInserters.fromValue(req))
-                //.body(BodyInserters.fromValue(req))
-
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<ResultDto<MoneyTransferResponseDto>>(){});
 
         ResultDto<MoneyTransferResponseDto> resultDto = transferResult.block();
 
-        //if (nonNull(resultDto) && nonNull(resultDto.getError()) && !resultDto.getError().isEmpty()){
         if (nonNull(resultDto) && resultDto.getStatus().equals("KO")){
-            throw new MoneyTransferExcepion();
+            throw new AccountBusinessException();
         }
         else{
-            return resultDto.getPayload();
+            return Objects.requireNonNull(resultDto).getPayload();
         }
+    }
+
+    public static ExchangeFilterFunction errorHandler() {
+        return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
+            if (clientResponse.statusCode().is5xxServerError()) {
+                return clientResponse
+                        .bodyToMono(new ParameterizedTypeReference<ResultDto<?>>(){})
+                        .flatMap(errorBody ->
+                                Mono.error(new AccountBusinessException(errorBody.getError())));
+            } else if (clientResponse.statusCode().is4xxClientError()) {
+                return clientResponse
+                        .bodyToMono(new ParameterizedTypeReference<Result2Dto<?>>(){})
+                        .flatMap(errorBody ->
+                                Mono.error(new AccountBusinessException(errorBody.getErrors())));
+            } else {
+                return Mono.just(clientResponse);
+            }
+        });
     }
 }
