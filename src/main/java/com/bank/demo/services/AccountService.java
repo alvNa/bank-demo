@@ -31,11 +31,8 @@ import static com.bank.demo.util.HttpConstants.*;
 import static java.util.Objects.nonNull;
 
 @Service
-@AllArgsConstructor
 public class AccountService {
-    private String bankSrvUrl;
 
-    @Autowired
     private WebClient webClient;
 
     @Autowired
@@ -45,13 +42,12 @@ public class AccountService {
     public static final String TRANSACTIONS_PATH = "/accounts/{accountId}/transactions";
     public static final String MONEY_TRANSFER_PATH = "/accounts/{accountId}/payments/money-transfers";
 
-
     public AccountService(@Value("${app.server.url}") String bankSrvUrl,
                           @Value("${app.header.apikey}") String apiKey,
                           @Value("${app.header.timezone}") String timeZone,
                           @Value("${app.header.authschema}") String authSchema,
                           @Autowired TransactionService transactionService) {
-        this.bankSrvUrl = bankSrvUrl;
+
         this.transactionService = transactionService;
         //TODO: Move props and webclient to a WebClient Config
         this.webClient = WebClient.builder().baseUrl(bankSrvUrl)

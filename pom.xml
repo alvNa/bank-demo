@@ -84,14 +84,7 @@
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>com.github.javafaker</groupId>
-			<artifactId>javafaker</artifactId>
-			<version>1.0.2</version>
-			<scope>test</scope>
-		</dependency>
-		-->
+
 		<dependency>
 			<groupId>org.mock-server</groupId>
 			<artifactId>mockserver-spring-test-listener</artifactId>
@@ -106,6 +99,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<mainClass>com.bank.demo.BankApplication</mainClass>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
