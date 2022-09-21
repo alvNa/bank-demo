@@ -1,5 +1,6 @@
 package com.bank.demo.services;
 
+import com.bank.demo.config.WebClientConfig;
 import com.bank.demo.dto.*;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -14,7 +15,9 @@ import org.mockserver.model.MediaType;
 import org.mockserver.springtest.MockServerTest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -29,6 +32,7 @@ import static org.mockserver.model.HttpResponse.response;
 @MockServerTest("server.url=http://localhost:${mockServerPort}")
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ContextConfiguration(classes= WebClientConfig.class, loader= AnnotationConfigContextLoader.class)
 public class AccountServiceTest {
 
     @Value("${server.url}")
@@ -56,7 +60,10 @@ public class AccountServiceTest {
 
     @BeforeAll
     public void beforeAll(){
-        accountService = new AccountService(serverUrl, transactionService);
+        accountService = new AccountService(serverUrl, "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
+                "Europe/Rome",
+                "S2S",
+                transactionService);
     }
 
     @Test
@@ -134,9 +141,6 @@ public class AccountServiceTest {
                 .bicCode("SELBIT2BXXX")
                 .build();
         val addressDto = AddressDto.builder()
-                //.city("Madrid")
-                //.countryCode("34")
-                //.address("xxx")
                 .build();
 
         val creditor = Creditor.builder()
