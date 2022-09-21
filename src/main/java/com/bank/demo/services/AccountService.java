@@ -8,6 +8,7 @@ import com.bank.demo.dto.generic.PayloadDto;
 import com.bank.demo.dto.generic.Result2Dto;
 import com.bank.demo.dto.generic.ResultDto;
 import com.bank.demo.exceptions.AccountBusinessException;
+import liquibase.pro.packaged.A;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,13 +35,18 @@ public class AccountService {
 
     private WebClient webClient;
 
+    //@Autowired
+    private TransactionService transactionService;
+
     public static final String BALANCE_PATH = "/accounts/{accountId}/balance";
     public static final String TRANSACTIONS_PATH = "/accounts/{accountId}/transactions";
     public static final String MONEY_TRANSFER_PATH = "/accounts/{accountId}/payments/money-transfers";
 
     @Autowired
-    public AccountService(@Value("${app.bankSrvUrl}") String bankSrvUrl) {
+    public AccountService(@Value("${app.bankSrvUrl}") String bankSrvUrl,
+                          @Autowired TransactionService transactionService) {
         this.bankSrvUrl = bankSrvUrl;
+        this.transactionService = transactionService;
         this.webClient = WebClient.builder().baseUrl(bankSrvUrl)
                 .defaultHeader("Api-Key", "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP")
                 .defaultHeader("X-Time-Zone", "Europe/Rome")
@@ -72,9 +78,11 @@ public class AccountService {
                 .onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> Mono.empty())
                 .bodyToMono(new ParameterizedTypeReference<ResultDto<PayloadDto<TransactionDto>>>(){});
 
-        return result.blockOptional()
+        val transactionDtos = result.blockOptional()
                 .map(x -> x.getPayload().getList())
                 .orElse(Collections.emptyList());
+        transactionService.saveAll(transactionDtos);
+        return transactionDtos;
     }
 
     public MoneyTransferResponseDto sendMoneyTransfer(Long accountId, MoneyTransferRequestDto body) throws AccountBusinessException {
