@@ -1,0 +1,333 @@
+{
+	"info": {
+		"_postman_id": "816af127-e6df-4c60-bc90-788ff03041c1",
+		"name": "Bank",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get accounts",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"value": "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
+						"type": "text"
+					},
+					{
+						"key": "X-Time-Zone",
+						"value": "Europe/Rome",
+						"type": "text"
+					},
+					{
+						"key": "Auth-Schema",
+						"value": "S2S",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://sandbox.fabrick.com/api/gbs/banking/v4.0/accounts",
+					"protocol": "https",
+					"host": [
+						"sandbox",
+						"fabrick",
+						"com"
+					],
+					"path": [
+						"api",
+						"gbs",
+						"banking",
+						"v4.0",
+						"accounts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get balance",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"value": "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
+						"type": "text"
+					},
+					{
+						"key": "X-Time-Zone",
+						"value": "Europe/Rome",
+						"type": "text"
+					},
+					{
+						"key": "Auth-Schema",
+						"value": "S2S",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://sandbox.fabrick.com/api/gbs/banking/v4.0/accounts/14537780/balance",
+					"protocol": "https",
+					"host": [
+						"sandbox",
+						"fabrick",
+						"com"
+					],
+					"path": [
+						"api",
+						"gbs",
+						"banking",
+						"v4.0",
+						"accounts",
+						"14537780",
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get transactions",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"value": "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
+						"type": "text"
+					},
+					{
+						"key": "X-Time-Zone",
+						"value": "Europe/Rome",
+						"type": "text"
+					},
+					{
+						"key": "Auth-Schema",
+						"value": "S2S",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://sandbox.fabrick.com/api/gbs/banking/v4.0/accounts/14537780/transactions?fromAccountingDate=2016-12-01&toAccountingDate=2017-01-01",
+					"protocol": "https",
+					"host": [
+						"sandbox",
+						"fabrick",
+						"com"
+					],
+					"path": [
+						"api",
+						"gbs",
+						"banking",
+						"v4.0",
+						"accounts",
+						"14537780",
+						"transactions"
+					],
+					"query": [
+						{
+							"key": "fromAccountingDate",
+							"value": "2016-12-01"
+						},
+						{
+							"key": "toAccountingDate",
+							"value": "2017-01-01"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Money transfer",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Api-Key",
+						"value": "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
+						"type": "text"
+					},
+					{
+						"key": "X-Time-Zone",
+						"value": "Europe/Rome",
+						"type": "text"
+					},
+					{
+						"key": "Auth-Schema",
+						"value": "S2S",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"creditor\": {\n    \"name\": \"John Doe\",\n    \"account\": {\n      \"accountCode\": \"IT23A0336844430152923804660\",\n      \"bicCode\": \"SELBIT2BXXX\"\n    },\n    \"address\": {\n      \"address\": null,\n      \"city\": null,\n      \"countryCode\": null\n    }\n  },\n  \"executionDate\": \"2019-04-01\",\n  \"uri\": \"REMITTANCE_INFORMATION\",\n  \"description\": \"Payment invoice 75/2017\",\n  \"amount\": 800,\n  \"currency\": \"EUR\",\n  \"isUrgent\": false,\n  \"isInstant\": false,\n  \"feeType\": \"SHA\",\n  \"feeAccountId\": \"45685475\",\n  \"taxRelief\": {\n    \"taxReliefId\": \"L449\",\n    \"isCondoUpgrade\": false,\n    \"creditorFiscalCode\": \"56258745832\",\n    \"beneficiaryType\": \"NATURAL_PERSON\",\n    \"naturalPersonBeneficiary\": {\n      \"fiscalCode1\": \"MRLFNC81L04A859L\",\n      \"fiscalCode2\": null,\n      \"fiscalCode3\": null,\n      \"fiscalCode4\": null,\n      \"fiscalCode5\": null\n    },\n    \"legalPersonBeneficiary\": {\n      \"fiscalCode\": null,\n      \"legalRepresentativeFiscalCode\": null\n    }\n  }\n}"
+				},
+				"url": {
+					"raw": "https://sandbox.fabrick.com/api/gbs/banking/v4.0/accounts/14537780/payments/money-transfers",
+					"protocol": "https",
+					"host": [
+						"sandbox",
+						"fabrick",
+						"com"
+					],
+					"path": [
+						"api",
+						"gbs",
+						"banking",
+						"v4.0",
+						"accounts",
+						"14537780",
+						"payments",
+						"money-transfers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get balance Local",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"value": "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
+						"type": "text"
+					},
+					{
+						"key": "X-Time-Zone",
+						"value": "Europe/Rome",
+						"type": "text"
+					},
+					{
+						"key": "Auth-Schema",
+						"value": "S2S",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/gbs/banking/v4.0/accounts/14537780/balance",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"gbs",
+						"banking",
+						"v4.0",
+						"accounts",
+						"14537780",
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get transactions Local",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"value": "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
+						"type": "text"
+					},
+					{
+						"key": "X-Time-Zone",
+						"value": "Europe/Rome",
+						"type": "text"
+					},
+					{
+						"key": "Auth-Schema",
+						"value": "S2S",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/gbs/banking/v4.0/accounts/14537780/transactions?fromAccountingDate=2016-12-01&toAccountingDate=2017-01-01",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"gbs",
+						"banking",
+						"v4.0",
+						"accounts",
+						"14537780",
+						"transactions"
+					],
+					"query": [
+						{
+							"key": "fromAccountingDate",
+							"value": "2016-12-01"
+						},
+						{
+							"key": "toAccountingDate",
+							"value": "2017-01-01"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Monet transfer local",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Api-Key",
+						"value": "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
+						"type": "text"
+					},
+					{
+						"key": "X-Time-Zone",
+						"value": "Europe/Rome",
+						"type": "text"
+					},
+					{
+						"key": "Auth-Schema",
+						"value": "S2S",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"creditor\": {\n    \"name\": \"John Doe\",\n    \"account\": {\n      \"accountCode\": \"IT23A0336844430152923804660\",\n      \"bicCode\": \"SELBIT2BXXX\"\n    },\n    \"address\": {\n      \"address\": null,\n      \"city\": null,\n      \"countryCode\": null\n    }\n  },\n  \"executionDate\": \"2019-04-01\",\n  \"uri\": \"REMITTANCE_INFORMATION\",\n  \"description\": \"Payment invoice 75/2017\",\n  \"amount\": 800,\n  \"currency\": \"EUR\",\n  \"isUrgent\": false,\n  \"isInstant\": false,\n  \"feeType\": \"SHA\",\n  \"feeAccountId\": \"45685475\",\n  \"taxRelief\": {\n    \"taxReliefId\": \"L449\",\n    \"isCondoUpgrade\": false,\n    \"creditorFiscalCode\": \"56258745832\",\n    \"beneficiaryType\": \"NATURAL_PERSON\",\n    \"naturalPersonBeneficiary\": {\n      \"fiscalCode1\": \"MRLFNC81L04A859L\",\n      \"fiscalCode2\": null,\n      \"fiscalCode3\": null,\n      \"fiscalCode4\": null,\n      \"fiscalCode5\": null\n    },\n    \"legalPersonBeneficiary\": {\n      \"fiscalCode\": null,\n      \"legalRepresentativeFiscalCode\": null\n    }\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/gbs/banking/v4.0/accounts/14537780/payments/money-transfers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"gbs",
+						"banking",
+						"v4.0",
+						"accounts",
+						"14537780",
+						"payments",
+						"money-transfers"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
