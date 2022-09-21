@@ -46,7 +46,7 @@ public class AccountController {
 
     @SneakyThrows
     @PostMapping(MONEY_TRANSFER_PATH)
-    public ResponseEntity<MoneyTransferResponseDto> commitTransfer(@PathVariable Long accountId, @RequestBody @Valid MoneyTransferRequestDto body) {
+    public ResponseEntity<MoneyTransferResponseDto> sendMoneyTransfer(@PathVariable Long accountId, @RequestBody @Valid MoneyTransferRequestDto body) {
         return ResponseEntity.ok(accountService.sendMoneyTransfer(accountId, body));
     }
 }

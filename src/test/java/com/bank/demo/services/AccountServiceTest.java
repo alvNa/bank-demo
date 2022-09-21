@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.JsonBody;
 import org.mockserver.model.MediaType;
@@ -47,11 +48,15 @@ public class AccountServiceTest {
     @Value("classpath:money-transfer-response2.json")
     private Resource moneyResponseResourceFile;
 
+    @Mock
+    private TransactionService transactionService;
+
     private AccountService accountService;
+
 
     @BeforeAll
     public void beforeAll(){
-        accountService = new AccountService(serverUrl);
+        accountService = new AccountService(serverUrl, transactionService);
     }
 
     @Test
@@ -99,7 +104,6 @@ public class AccountServiceTest {
                         .withBody(jsonResponse));
 
         val transactionId = 1001049464001L;
-
         val transactions = accountService.getTransactions(accountId, dateFrom, dateTo);
 
         assertNotNull(transactions);
