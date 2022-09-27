@@ -2,6 +2,8 @@ package com.bank.demo.controllers;
 
 import com.bank.demo.dto.*;
 import com.bank.demo.http.RestResponseEntityExceptionHandler;
+import com.bank.demo.services.Account2Service;
+import com.bank.demo.services.Account3Service;
 import com.bank.demo.services.AccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
@@ -34,6 +36,12 @@ public class AccountControllerTest {
 
     @MockBean
     private AccountService accountService;
+
+    @MockBean
+    private Account2Service account2Service;
+
+    @MockBean
+    private Account3Service account3Service;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -72,7 +80,7 @@ public class AccountControllerTest {
         val dateFrom = LocalDate.of(2019,04,01);
         val dateTo = LocalDate.of(2019,04,01);
 
-        when(accountService.getTransactions(accountId, dateFrom, dateTo)).thenReturn(Arrays.asList(t1,t2));
+        when(account2Service.getTransactions(accountId, dateFrom, dateTo)).thenReturn(Arrays.asList(t1,t2));
 
         mockMvc.perform(get(ACCOUNT_BASE + TRANSACTIONS_PATH, accountId)
                         .param("fromAccountingDate", dateFrom.toString())
@@ -134,7 +142,7 @@ public class AccountControllerTest {
                 .direction("XXX")
                 .build();
 
-        when(accountService.sendMoneyTransfer(accountId, req)).thenReturn(res);
+        when(account3Service.sendMoneyTransfer(accountId, req)).thenReturn(res);
 
         mockMvc.perform(post(ACCOUNT_BASE + MONEY_TRANSFER_PATH, accountId)
                         .content(objectMapper.writeValueAsString(req))

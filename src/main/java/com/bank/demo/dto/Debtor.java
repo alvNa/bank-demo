@@ -11,8 +11,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Creditor implements Serializable {
+public class Debtor implements Serializable {
     String name;
     AccountDto account;
-    AddressDto address;
 }

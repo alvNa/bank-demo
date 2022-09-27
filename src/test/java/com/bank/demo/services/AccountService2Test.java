@@ -1,13 +1,13 @@
 package com.bank.demo.services;
 
 import com.bank.demo.config.WebClientConfig;
-import com.bank.demo.dto.BalanceDto;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.MediaType;
 import org.mockserver.springtest.MockServerTest;
@@ -18,7 +18,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.time.LocalDate;
 
@@ -32,50 +31,52 @@ import static org.mockserver.model.HttpResponse.response;
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ContextConfiguration(classes= WebClientConfig.class, loader= AnnotationConfigContextLoader.class)
-public class AccountServiceTest {
+public class AccountService2Test {
 
     @Value("${server.url}")
     private String serverUrl;
 
     private MockServerClient mockServerClient;
 
-    @Value("classpath:balance-response.json")
-    private Resource balanceResourceFile;
+    @Value("classpath:transactions-response.json")
+    private Resource transactionsResourceFile;
 
-    private AccountService accountService;
+    @Mock
+    private TransactionService transactionService;
+
+    private Account2Service accountService;
 
 
     @BeforeAll
     public void beforeAll(){
-        accountService = new AccountService(serverUrl, "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
+        accountService = new Account2Service(serverUrl, "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
                 "Europe/Rome",
-                "S2S");
+                "S2S",
+                transactionService);
     }
 
     @Test
-    void shouldGetBalanceOK() throws IOException {
-        val jsonResponse = Files.readString(balanceResourceFile.getFile().toPath());
+    void shouldGetTransactionsOK() throws IOException {
+        val jsonResponse = Files.readString(transactionsResourceFile.getFile().toPath());
+        val accountId = 14537780L;
+        val dateFrom = LocalDate.of(2016,12,01);
+        val dateTo = LocalDate.of(2017,01,01);
 
         mockServerClient.when(request()
                         .withMethod("GET")
-                        .withPath("/accounts/1/balance"))
+                        .withPath("/accounts/14537780/transactions")
+                        .withQueryStringParameter("fromAccountingDate",dateFrom.toString())
+                        .withQueryStringParameter("toAccountingDate",dateTo.toString()))
                 .respond(response()
                         .withStatusCode(200)
                         .withContentType(MediaType.APPLICATION_JSON)
                         .withBody(jsonResponse));
 
-        Long accountId = 1L;
-        val response = BalanceDto.builder()
-                .date(LocalDate.of(2022,9,20))
-                .balance(BigDecimal.valueOf(7.27))
-                .availableBalance(BigDecimal.valueOf(7.27))
-                .currency("EUR")
-                .build();
+        val transactionId = 1001049464001L;
+        val transactions = accountService.getTransactions(accountId, dateFrom, dateTo);
 
-        val maybeBalance = accountService.getBalance(accountId);
-
-        // Assert response
-        assertNotNull(maybeBalance.isPresent());
-        assertEquals(response, maybeBalance.get());
+        assertNotNull(transactions);
+        assertEquals(6, transactions.size());
+        assertEquals(transactionId, transactions.get(0).getTransactionId());
     }
 }

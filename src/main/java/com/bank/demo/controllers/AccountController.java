@@ -4,6 +4,8 @@ import com.bank.demo.dto.BalanceDto;
 import com.bank.demo.dto.MoneyTransferRequestDto;
 import com.bank.demo.dto.MoneyTransferResponseDto;
 import com.bank.demo.dto.TransactionDto;
+import com.bank.demo.services.Account2Service;
+import com.bank.demo.services.Account3Service;
 import com.bank.demo.services.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -27,6 +29,8 @@ public class AccountController {
     public static final String MONEY_TRANSFER_PATH = "/accounts/{accountId}/payments/money-transfers";
 
     private final AccountService accountService;
+    private final Account2Service account2Service;
+    private final Account3Service account3Service;
 
 
     @GetMapping(BALANCE_PATH)
@@ -41,12 +45,12 @@ public class AccountController {
                                                                 @RequestParam("fromAccountingDate") LocalDate fromDate,
                                                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                                                 @RequestParam("toAccountingDate") LocalDate toDate) {
-        return ResponseEntity.ok(accountService.getTransactions(accountId, fromDate, toDate));
+        return ResponseEntity.ok(account2Service.getTransactions(accountId, fromDate, toDate));
     }
 
     @SneakyThrows
     @PostMapping(MONEY_TRANSFER_PATH)
     public ResponseEntity<MoneyTransferResponseDto> sendMoneyTransfer(@PathVariable Long accountId, @RequestBody @Valid MoneyTransferRequestDto body) {
-        return ResponseEntity.ok(accountService.sendMoneyTransfer(accountId, body));
+        return ResponseEntity.ok(account3Service.sendMoneyTransfer(accountId, body));
     }
 }

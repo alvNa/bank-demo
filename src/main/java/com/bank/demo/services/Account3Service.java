@@ -1,6 +1,7 @@
 package com.bank.demo.services;
 
-import com.bank.demo.dto.BalanceDto;
+import com.bank.demo.dto.MoneyTransferRequestDto;
+import com.bank.demo.dto.MoneyTransferResponseDto;
 import com.bank.demo.dto.generic.Result2Dto;
 import com.bank.demo.dto.generic.ResultDto;
 import com.bank.demo.exceptions.AccountBusinessException;
@@ -8,28 +9,28 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
+import java.util.Objects;
 
 import static com.bank.demo.util.HttpConstants.*;
+import static java.util.Objects.nonNull;
 
 @Service
-public class AccountService {
+public class Account3Service {
 
     private WebClient webClient;
 
-    public static final String BALANCE_PATH = "/accounts/{accountId}/balance";
+    public static final String MONEY_TRANSFER_PATH = "/accounts/{accountId}/payments/money-transfers";
 
-    public AccountService(@Value("${app.server.url}") String bankSrvUrl,
-                          @Value("${app.header.apikey}") String apiKey,
-                          @Value("${app.header.timezone}") String timeZone,
-                          @Value("${app.header.authschema}") String authSchema) {
+    public Account3Service(@Value("${app.server.url}") String bankSrvUrl,
+                           @Value("${app.header.apikey}") String apiKey,
+                           @Value("${app.header.timezone}") String timeZone,
+                           @Value("${app.header.authschema}") String authSchema) {
 
         //TODO: Move props and webclient to a WebClient Config
         this.webClient = WebClient.builder().baseUrl(bankSrvUrl)
@@ -41,15 +42,23 @@ public class AccountService {
                 .build();
     }
 
-    public Optional<BalanceDto> getBalance(Long accountId) {
-        val customer = webClient.get()
-                .uri(BALANCE_PATH, accountId)
+    public MoneyTransferResponseDto sendMoneyTransfer(Long accountId, MoneyTransferRequestDto body) throws AccountBusinessException {
+        val transferResult = webClient.post()
+                .uri(MONEY_TRANSFER_PATH, accountId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(body), MoneyTransferRequestDto.class)
                 .retrieve()
-                .onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> Mono.empty())
-                .bodyToMono(new ParameterizedTypeReference<ResultDto<BalanceDto>>(){});
+                .bodyToMono(new ParameterizedTypeReference<ResultDto<MoneyTransferResponseDto>>(){});
 
-        return customer.blockOptional()
-                .map(ResultDto::getPayload);
+        ResultDto<MoneyTransferResponseDto> resultDto = transferResult.block();
+
+        if (nonNull(resultDto) && resultDto.getStatus().equals("KO")){
+            throw new AccountBusinessException();
+        }
+        else{
+            return Objects.requireNonNull(resultDto).getPayload();
+        }
     }
 
     public static ExchangeFilterFunction errorHandler() {
