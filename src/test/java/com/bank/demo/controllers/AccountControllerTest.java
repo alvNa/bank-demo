@@ -2,9 +2,9 @@ package com.bank.demo.controllers;
 
 import com.bank.demo.dto.*;
 import com.bank.demo.http.RestResponseEntityExceptionHandler;
-import com.bank.demo.services.Account2Service;
-import com.bank.demo.services.Account3Service;
-import com.bank.demo.services.AccountService;
+import com.bank.demo.services.AccountTransactionService;
+import com.bank.demo.services.MoneyTransferService;
+import com.bank.demo.services.AccountBalanceService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
 import org.junit.jupiter.api.Test;
@@ -35,13 +35,13 @@ public class AccountControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private AccountService accountService;
+    private AccountBalanceService accountBalanceService;
 
     @MockBean
-    private Account2Service account2Service;
+    private AccountTransactionService accountTransactionService;
 
     @MockBean
-    private Account3Service account3Service;
+    private MoneyTransferService moneyTransferService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -55,7 +55,7 @@ public class AccountControllerTest {
                 .availableBalance(BigDecimal.valueOf(29.64))
                 .build();
 
-        when(accountService.getBalance(accountId)).thenReturn(Optional.of(balanceDto));
+        when(accountBalanceService.getBalance(accountId)).thenReturn(Optional.of(balanceDto));
 
         mockMvc.perform(get(ACCOUNT_BASE + BALANCE_PATH, accountId))
                 .andExpect(status().is2xxSuccessful())
@@ -66,7 +66,7 @@ public class AccountControllerTest {
     void shouldReturnNotFoundBalanceWhenInvalidAccountId() throws Exception {
         Long accountId = -1L;
 
-        when(accountService.getBalance(accountId)).thenReturn(Optional.empty());
+        when(accountBalanceService.getBalance(accountId)).thenReturn(Optional.empty());
 
         mockMvc.perform(get(ACCOUNT_BASE + BALANCE_PATH, accountId))
                 .andExpect(status().is4xxClientError());
@@ -80,7 +80,7 @@ public class AccountControllerTest {
         val dateFrom = LocalDate.of(2019,04,01);
         val dateTo = LocalDate.of(2019,04,01);
 
-        when(account2Service.getTransactions(accountId, dateFrom, dateTo)).thenReturn(Arrays.asList(t1,t2));
+        when(accountTransactionService.getTransactions(accountId, dateFrom, dateTo)).thenReturn(Arrays.asList(t1,t2));
 
         mockMvc.perform(get(ACCOUNT_BASE + TRANSACTIONS_PATH, accountId)
                         .param("fromAccountingDate", dateFrom.toString())
@@ -142,7 +142,7 @@ public class AccountControllerTest {
                 .direction("XXX")
                 .build();
 
-        when(account3Service.sendMoneyTransfer(accountId, req)).thenReturn(res);
+        when(moneyTransferService.sendMoneyTransfer(accountId, req)).thenReturn(res);
 
         mockMvc.perform(post(ACCOUNT_BASE + MONEY_TRANSFER_PATH, accountId)
                         .content(objectMapper.writeValueAsString(req))

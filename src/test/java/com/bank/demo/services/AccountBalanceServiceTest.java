@@ -1,8 +1,7 @@
 package com.bank.demo.services;
 
-import com.bank.demo.config.WebClientConfig;
+import com.bank.demo.config.WebFluxConfig;
 import com.bank.demo.dto.BalanceDto;
-import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -11,45 +10,46 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.MediaType;
 import org.mockserver.springtest.MockServerTest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.time.LocalDate;
 
+import static com.bank.demo.services.AccountBalanceService.BALANCE_PATH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-@Slf4j
 @MockServerTest("server.url=http://localhost:${mockServerPort}")
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ContextConfiguration(classes= WebClientConfig.class, loader= AnnotationConfigContextLoader.class)
-public class AccountServiceTest {
+@SpringBootTest(classes = WebFluxConfig.class)
+public class AccountBalanceServiceTest {
 
     @Value("${server.url}")
     private String serverUrl;
+
+    @Autowired
+    private WebClient webClient;
 
     private MockServerClient mockServerClient;
 
     @Value("classpath:balance-response.json")
     private Resource balanceResourceFile;
 
-    private AccountService accountService;
-
+    private AccountBalanceService accountBalanceService;
 
     @BeforeAll
     public void beforeAll(){
-        accountService = new AccountService(serverUrl, "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
-                "Europe/Rome",
-                "S2S");
+        accountBalanceService = new AccountBalanceService(webClient);
     }
 
     @Test
@@ -58,7 +58,8 @@ public class AccountServiceTest {
 
         mockServerClient.when(request()
                         .withMethod("GET")
-                        .withPath("/accounts/1/balance"))
+                        .withPath(BALANCE_PATH)
+                        .withPathParameter("accountId","1"))
                 .respond(response()
                         .withStatusCode(200)
                         .withContentType(MediaType.APPLICATION_JSON)
@@ -72,10 +73,10 @@ public class AccountServiceTest {
                 .currency("EUR")
                 .build();
 
-        val maybeBalance = accountService.getBalance(accountId);
+        val maybeBalance = accountBalanceService.getBalance(accountId);
 
         // Assert response
-        assertNotNull(maybeBalance.isPresent());
+        assertTrue(maybeBalance.isPresent());
         assertEquals(response, maybeBalance.get());
     }
 }

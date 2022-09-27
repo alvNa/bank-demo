@@ -4,9 +4,9 @@ import com.bank.demo.dto.BalanceDto;
 import com.bank.demo.dto.MoneyTransferRequestDto;
 import com.bank.demo.dto.MoneyTransferResponseDto;
 import com.bank.demo.dto.TransactionDto;
-import com.bank.demo.services.Account2Service;
-import com.bank.demo.services.Account3Service;
-import com.bank.demo.services.AccountService;
+import com.bank.demo.services.AccountTransactionService;
+import com.bank.demo.services.MoneyTransferService;
+import com.bank.demo.services.AccountBalanceService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -28,14 +28,14 @@ public class AccountController {
     public static final String TRANSACTIONS_PATH = "/accounts/{accountId}/transactions";
     public static final String MONEY_TRANSFER_PATH = "/accounts/{accountId}/payments/money-transfers";
 
-    private final AccountService accountService;
-    private final Account2Service account2Service;
-    private final Account3Service account3Service;
+    private final AccountBalanceService accountBalanceService;
+    private final AccountTransactionService accountTransactionService;
+    private final MoneyTransferService moneyTransferService;
 
 
     @GetMapping(BALANCE_PATH)
     public ResponseEntity<BalanceDto> getBalance(@PathVariable Long accountId) {
-        return accountService.getBalance(accountId).map(ResponseEntity::ok)
+        return accountBalanceService.getBalance(accountId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -45,12 +45,12 @@ public class AccountController {
                                                                 @RequestParam("fromAccountingDate") LocalDate fromDate,
                                                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                                                 @RequestParam("toAccountingDate") LocalDate toDate) {
-        return ResponseEntity.ok(account2Service.getTransactions(accountId, fromDate, toDate));
+        return ResponseEntity.ok(accountTransactionService.getTransactions(accountId, fromDate, toDate));
     }
 
     @SneakyThrows
     @PostMapping(MONEY_TRANSFER_PATH)
     public ResponseEntity<MoneyTransferResponseDto> sendMoneyTransfer(@PathVariable Long accountId, @RequestBody @Valid MoneyTransferRequestDto body) {
-        return ResponseEntity.ok(account3Service.sendMoneyTransfer(accountId, body));
+        return ResponseEntity.ok(moneyTransferService.sendMoneyTransfer(accountId, body));
     }
 }
