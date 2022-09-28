@@ -11,4 +11,5 @@ public final class HttpConstants {
     public static final String AUTH_SCHEMA_HEADER = "Auth-Schema";
 
     public static final String ACCOUNT_BASE = "/api/gbs/banking/v4.0";
+
 }

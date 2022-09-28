@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,9 +25,9 @@ public class MoneyTransferRequestDto implements Serializable {
     @JsonFormat(pattern="yyyy-MM-dd")
     LocalDate executionDate;
     String uri;
+    @NotNull
     String description;
     @NotNull
-    @Positive
     BigDecimal amount;
     @NotNull
     @NotBlank

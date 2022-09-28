@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @Data
@@ -12,6 +13,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 public class AccountDto implements Serializable {
+    @NotNull
     String accountCode;
     String bicCode;
 }
