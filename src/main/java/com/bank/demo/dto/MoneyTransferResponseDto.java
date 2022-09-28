@@ -16,4 +16,6 @@ public class MoneyTransferResponseDto implements Serializable {
     private Long moneyTransferId;
     private String status;
     private String direction;
+    private Creditor creditor;
+    private Debtor debtor;
 }

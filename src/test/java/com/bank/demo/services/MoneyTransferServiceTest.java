@@ -1,8 +1,7 @@
 package com.bank.demo.services;
 
-import com.bank.demo.config.WebClientConfig;
+import com.bank.demo.config.WebFluxConfig;
 import com.bank.demo.dto.*;
-import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,38 +12,37 @@ import org.mockserver.client.MockServerClient;
 import org.mockserver.model.JsonBody;
 import org.mockserver.model.MediaType;
 import org.mockserver.springtest.MockServerTest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static com.bank.demo.services.MoneyTransferService.MONEY_TRANSFER_PATH;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-@Slf4j
 @MockServerTest("server.url=http://localhost:${mockServerPort}")
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ContextConfiguration(classes= WebClientConfig.class, loader= AnnotationConfigContextLoader.class)
-public class AccountServiceTest {
+@SpringBootTest(classes = WebFluxConfig.class)
+public class MoneyTransferServiceTest {
 
     @Value("${server.url}")
     private String serverUrl;
 
+    @Autowired
+    private WebClient webClient;
+
     private MockServerClient mockServerClient;
-
-    @Value("classpath:balance-response.json")
-    private Resource balanceResourceFile;
-
-    @Value("classpath:transactions-response.json")
-    private Resource transactionsResourceFile;
 
     @Value("classpath:money-transfer-request1.json")
     private Resource moneyRequestResourceFile;
@@ -55,79 +53,25 @@ public class AccountServiceTest {
     @Mock
     private TransactionService transactionService;
 
-    private AccountService accountService;
+    private MoneyTransferService accountService;
 
 
     @BeforeAll
     public void beforeAll(){
-        accountService = new AccountService(serverUrl, "FXOVVXXHVCPVPBZXIJOBGUGSKHDNFRRQJP",
-                "Europe/Rome",
-                "S2S",
-                transactionService);
-    }
-
-    @Test
-    void shouldGetBalanceOK() throws IOException {
-        val jsonResponse = Files.readString(balanceResourceFile.getFile().toPath());
-
-        mockServerClient.when(request()
-                        .withMethod("GET")
-                        .withPath("/accounts/1/balance"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withContentType(MediaType.APPLICATION_JSON)
-                        .withBody(jsonResponse));
-
-        Long accountId = 1L;
-        val response = BalanceDto.builder()
-                .date(LocalDate.of(2022,9,20))
-                .balance(BigDecimal.valueOf(7.27))
-                .availableBalance(BigDecimal.valueOf(7.27))
-                .currency("EUR")
-                .build();
-
-        val maybeBalance = accountService.getBalance(accountId);
-
-        // Assert response
-        assertNotNull(maybeBalance.isPresent());
-        assertEquals(response, maybeBalance.get());
-    }
-
-    @Test
-    void shouldGetTransactionsOK() throws IOException {
-        val jsonResponse = Files.readString(transactionsResourceFile.getFile().toPath());
-        val accountId = 14537780L;
-        val dateFrom = LocalDate.of(2016,12,01);
-        val dateTo = LocalDate.of(2017,01,01);
-
-        mockServerClient.when(request()
-                        .withMethod("GET")
-                        .withPath("/accounts/14537780/transactions")
-                        .withQueryStringParameter("fromAccountingDate",dateFrom.toString())
-                        .withQueryStringParameter("toAccountingDate",dateTo.toString()))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withContentType(MediaType.APPLICATION_JSON)
-                        .withBody(jsonResponse));
-
-        val transactionId = 1001049464001L;
-        val transactions = accountService.getTransactions(accountId, dateFrom, dateTo);
-
-        assertNotNull(transactions);
-        assertEquals(6, transactions.size());
-        assertEquals(transactionId, transactions.get(0).getTransactionId());
+        accountService = new MoneyTransferService(webClient);
     }
 
     @Test
     void shouldSendMoneyTransferOK() throws IOException {
         val jsonRequest = Files.readString(moneyRequestResourceFile.getFile().toPath());
         val jsonResponse = Files.readString(moneyResponseResourceFile.getFile().toPath());
-        val accountId = 14537780L;
+        Long accountId = 14537780L;
         val body = JsonBody.json(jsonRequest);
         mockServerClient
                 .when(request()
                         .withMethod("POST")
-                        .withPath("/accounts/14537780/payments/money-transfers")
+                        .withPath(MONEY_TRANSFER_PATH)
+                        .withPathParameter("accountId",accountId.toString())
                         .withBody(body)
                 )
                 .respond(response()
