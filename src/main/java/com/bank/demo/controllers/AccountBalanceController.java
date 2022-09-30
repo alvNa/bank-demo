@@ -2,6 +2,7 @@ package com.bank.demo.controllers;
 
 import com.bank.demo.dto.BalanceDto;
 import com.bank.demo.services.AccountBalanceService;
+import com.bank.demo.validation.AccountId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,7 @@ public class AccountBalanceController {
     private final AccountBalanceService accountService;
 
     @GetMapping(BALANCE_PATH)
-    public ResponseEntity<BalanceDto> getBalance(@PathVariable Long accountId) {
+    public ResponseEntity<BalanceDto> getBalance(@PathVariable @AccountId Long accountId) {
         return accountService.getBalance(accountId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
