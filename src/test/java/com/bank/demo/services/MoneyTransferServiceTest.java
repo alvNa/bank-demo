@@ -19,21 +19,22 @@ import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.time.LocalDate;
 
 import static com.bank.demo.services.MoneyTransferService.MONEY_TRANSFER_PATH;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static com.bank.demo.validation.AccountValidator.NEGATIVE_ACCOUNT_ID;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 @MockServerTest("server.url=http://localhost:${mockServerPort}")
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SpringBootTest(classes = WebFluxConfig.class)
+@SpringBootTest(classes = {WebFluxConfig.class})
 public class MoneyTransferServiceTest {
 
     @Value("${server.url}")
@@ -59,6 +60,28 @@ public class MoneyTransferServiceTest {
     @BeforeAll
     public void beforeAll(){
         accountService = new MoneyTransferService(webClient);
+    }
+
+    @Test
+    void shouldSendMoneyFailWhenInvalidAccountId() {
+        val accountId = -1L;
+        val req = new MoneyTransferRequestDto();
+
+        val ex = assertThrows(ConstraintViolationException.class, () -> accountService.sendMoneyTransfer(accountId, req));
+
+        // Assert response
+        assertEquals(NEGATIVE_ACCOUNT_ID, ex.getMessage());
+    }
+
+    @Test
+    void shouldSendMoneyFailWhenInvalidRequestId() {
+        val accountId = 12345L;
+        val req = new MoneyTransferRequestDto();
+
+        val ex = assertThrows(ConstraintViolationException.class, () -> accountService.sendMoneyTransfer(accountId, req));
+
+        // Assert response
+        assertEquals(5, ex.getConstraintViolations().size());
     }
 
     @Test

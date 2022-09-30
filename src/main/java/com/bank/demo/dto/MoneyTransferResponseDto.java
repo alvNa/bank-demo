@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -30,7 +29,7 @@ public class MoneyTransferResponseDto implements Serializable {
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     private OffsetDateTime createdDatetime;
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-    private LocalDateTime accountedDatetime;
+    private OffsetDateTime accountedDatetime;
     @JsonFormat(pattern="yyyy-MM-dd")
     private LocalDate debtorValueDate;
     @JsonFormat(pattern="yyyy-MM-dd")

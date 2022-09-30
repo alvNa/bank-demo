@@ -89,8 +89,29 @@ public class MoneyTransferControllerTest {
     }
 
     @Test
-    void shouldSendMoneyTransferOK() throws Exception {
+    void shouldSendMoneyFailWhenInvalidAccountId() throws Exception {
         Long accountId = -1L;
+        val req = getMoneyTransferRequest();
+
+        val moneyTransferId = 1L;
+        val direction = "OUTGOING";
+        val res = MoneyTransferResponseDto.builder()
+                .moneyTransferId(moneyTransferId)
+                .direction(direction)
+                .build();
+
+        when(moneyTransferService.sendMoneyTransfer(eq(accountId), any())).thenReturn(res);
+
+        mockMvc.perform(post(ACCOUNT_BASE + MONEY_TRANSFER_PATH, accountId)
+                        .header(TIME_ZONE_HEADER, "Europe/Rome")
+                        .content(objectMapper.writeValueAsString(req))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void shouldSendMoneyTransferOK() throws Exception {
+        Long accountId = 12345L;
         val req = getMoneyTransferRequest();
 
         val moneyTransferId = 1L;

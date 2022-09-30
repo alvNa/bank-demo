@@ -4,6 +4,8 @@ import com.bank.demo.dto.MoneyTransferRequestDto;
 import com.bank.demo.dto.MoneyTransferResponseDto;
 import com.bank.demo.dto.generic.ResultDto;
 import com.bank.demo.exceptions.AccountBusinessException;
+import com.bank.demo.validation.AccountValidator;
+import com.bank.demo.validation.MoneyTransferRequestValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.core.ParameterizedTypeReference;
@@ -23,7 +25,13 @@ public class MoneyTransferService {
 
     private final WebClient webClient;
 
+    private final MoneyTransferRequestValidator validator = new MoneyTransferRequestValidator();
+    private final AccountValidator accountValidator = new AccountValidator();
+
     public MoneyTransferResponseDto sendMoneyTransfer(Long accountId, MoneyTransferRequestDto body) throws AccountBusinessException {
+        accountValidator.validate(accountId);
+        validator.validate(body);
+
         val transferResult = webClient.post()
                 .uri(MONEY_TRANSFER_PATH, accountId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -41,4 +49,5 @@ public class MoneyTransferService {
             return Objects.requireNonNull(resultDto).getPayload();
         }
     }
+
 }

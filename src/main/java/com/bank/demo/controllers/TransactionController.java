@@ -2,6 +2,7 @@ package com.bank.demo.controllers;
 
 import com.bank.demo.dto.TransactionDto;
 import com.bank.demo.services.AccountTransactionService;
+import com.bank.demo.validation.AccountId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class TransactionController {
     private final AccountTransactionService accountTransactionService;
 
     @GetMapping(TRANSACTIONS_PATH)
-    public ResponseEntity<List<TransactionDto>> getTransactions(@PathVariable Long accountId,
+    public ResponseEntity<List<TransactionDto>> getTransactions(@PathVariable @AccountId Long accountId,
                                                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                                                 @RequestParam(FROM_DATE_QUERY_PARAM) LocalDate fromDate,
                                                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

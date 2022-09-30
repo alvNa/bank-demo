@@ -3,6 +3,7 @@ package com.bank.demo.controllers;
 import com.bank.demo.dto.MoneyTransferRequestDto;
 import com.bank.demo.dto.MoneyTransferResponseDto;
 import com.bank.demo.services.MoneyTransferService;
+import com.bank.demo.validation.AccountId;
 import com.bank.demo.validation.TimeZoneFormat;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -29,7 +30,8 @@ public class MoneyTransferController {
     @PostMapping(MONEY_TRANSFER_PATH)
     public ResponseEntity<MoneyTransferResponseDto> sendMoneyTransfer(
             @RequestHeader(TIME_ZONE_HEADER) @NotNull @TimeZoneFormat String timeZoneHeader,
-            @PathVariable Long accountId, @Valid @RequestBody MoneyTransferRequestDto body) {
+            @PathVariable @AccountId Long accountId,
+            @Valid @RequestBody MoneyTransferRequestDto body) {
 
         return ResponseEntity.ok(moneyTransferService.sendMoneyTransfer(accountId, body));
     }
